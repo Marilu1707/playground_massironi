@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.conf import settings
 from blog.models import Post
+from inventario.models import Queso
 
 
 # ── Receta 1: Pizza Margherita ───────────────────────────────────────────────
@@ -215,12 +216,12 @@ Desmoldá fría.
 """
 
 CHEESECAKE_IMAGE_URL = (
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/fifty/"
-    "Cheesecake_with_strawberry.jpg/1280px-Cheesecake_with_strawberry.jpg"
-)
-CHEESECAKE_IMAGE_FALLBACK = (
     "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/"
     "NY_Cheesecake.jpg/1280px-NY_Cheesecake.jpg"
+)
+CHEESECAKE_IMAGE_FALLBACK = (
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/"
+    "Cheesecake_with_blueberry_sauce.jpg/1280px-Cheesecake_with_blueberry_sauce.jpg"
 )
 
 
@@ -289,7 +290,54 @@ RECETAS = [
         'imagen_url':       CHEESECAKE_IMAGE_URL,
         'imagen_fallback':  CHEESECAKE_IMAGE_FALLBACK,
         'imagen_filename':  'cheesecake.jpg',
-        'precio_monedas':   0,
+        'precio_monedas':   50,  # receta premium
+    },
+]
+
+# ── Quesos a sembrar ─────────────────────────────────────────────────────────
+
+QUESOS = [
+    {
+        'nombre':          'Mozzarella Fresca 🧀',
+        'descripcion':     'Suave y cremosa. Imprescindible para pizzas, ensaladas caprese y cualquier cosa que merezca derretirse.',
+        'stock':           20,
+        'precio':          '1200.00',
+        'precio_monedas':  15,
+    },
+    {
+        'nombre':          'Parmesano Reggiano 🫙',
+        'descripcion':     'Curado 24 meses. Granulado, intenso, salado. Rallado sobre pasta o en láminas sobre cualquier cosa.',
+        'stock':           15,
+        'precio':          '2800.00',
+        'precio_monedas':  25,
+    },
+    {
+        'nombre':          'Ricotta Fresca 🥣',
+        'descripcion':     'Liviana y suave. Perfecta para rellenos, postres, tostadas y como base de salsas cremosas.',
+        'stock':           25,
+        'precio':          '900.00',
+        'precio_monedas':  10,
+    },
+    {
+        'nombre':          'Gorgonzola 💙',
+        'descripcion':     'Azul, fuerte y cremoso. Para quienes saben lo que quieren: riesgo, sabor y carácter.',
+        'stock':           10,
+        'precio':          '3200.00',
+        'precio_monedas':  30,
+    },
+    {
+        'nombre':          'Provolone Ahumado 🔥',
+        'descripcion':     'Semiduro, elástico y con ese toque ahumado que lo distingue. Ideal para sandwich, tabla y gratinar.',
+        'stock':           18,
+        'precio':          '1800.00',
+        'precio_monedas':  20,
+    },
+    {
+        'nombre':          'Queso Crema 🍰',
+        'descripcion':     'Untable, fresco y versátil. La base de la cheesecake y el secreto de mil rellenos.',
+        'stock':           22,
+        'precio':          '750.00',
+        'precio_monedas':  12,
     },
 ]
 
@@ -298,6 +346,12 @@ RECETAS = [
 
 class Command(BaseCommand):
     help = "Crea contenido inicial del nido (idempotente)"
+
+    # Títulos renombrados en versiones anteriores del seed — se eliminan sin importar el autor
+    TITULOS_OBSOLETOS = [
+        'Pizza Margherita Clásica 🍕',
+        'Pasta Alfredo Cremosa 🍝',
+    ]
 
     def _get_or_create_autor(self):
         """Devuelve el primer superuser, o crea un usuario sistema como fallback."""
@@ -321,21 +375,10 @@ class Command(BaseCommand):
             ))
         return autor
 
-    # Títulos renombrados en versiones anteriores del seed — se eliminan
-    # solo si el autor es el usuario sistema (nunca toca contenido real)
-    TITULOS_OBSOLETOS = [
-        'Pizza Margherita Clásica 🍕',
-        'Pasta Alfredo Cremosa 🍝',
-    ]
-
-    def handle(self, *args, **options):
-        autor = self._get_or_create_autor()
-
-        # Limpiar duplicados de versiones anteriores
-        eliminados = Post.objects.filter(
-            titulo__in=self.TITULOS_OBSOLETOS,
-            autor__username=SYSTEM_USERNAME,
-        ).delete()
+    def _seed_recetas(self, autor):
+        """Crea las recetas del nido (idempotente por título)."""
+        # Limpiar duplicados de versiones anteriores (cualquier autor)
+        eliminados = Post.objects.filter(titulo__in=self.TITULOS_OBSOLETOS).delete()
         if eliminados[0]:
             self.stdout.write(self.style.WARNING(
                 f"Eliminados {eliminados[0]} posts con títulos obsoletos."
@@ -365,3 +408,27 @@ class Command(BaseCommand):
                 self.stdout,
                 self.style,
             )
+
+    def _seed_quesos(self):
+        """Crea los quesos del inventario (idempotente por nombre)."""
+        for data in QUESOS:
+            queso, created = Queso.objects.get_or_create(
+                nombre=data['nombre'],
+                defaults={
+                    'descripcion':    data['descripcion'],
+                    'stock':          data['stock'],
+                    'precio':         data['precio'],
+                    'precio_monedas': data['precio_monedas'],
+                },
+            )
+            if created:
+                self.stdout.write(self.style.SUCCESS(f"  + Queso '{queso.nombre}' creado."))
+            else:
+                self.stdout.write(f"  · Queso '{queso.nombre}' ya existe — ok.")
+
+    def handle(self, *args, **options):
+        autor = self._get_or_create_autor()
+        self._seed_recetas(autor)
+        self.stdout.write("Sembrando quesos...")
+        self._seed_quesos()
+        self.stdout.write(self.style.SUCCESS("seed_datos completado ✅"))
