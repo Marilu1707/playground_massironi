@@ -321,8 +321,25 @@ class Command(BaseCommand):
             ))
         return autor
 
+    # Títulos renombrados en versiones anteriores del seed — se eliminan
+    # solo si el autor es el usuario sistema (nunca toca contenido real)
+    TITULOS_OBSOLETOS = [
+        'Pizza Margherita Clásica 🍕',
+        'Pasta Alfredo Cremosa 🍝',
+    ]
+
     def handle(self, *args, **options):
         autor = self._get_or_create_autor()
+
+        # Limpiar duplicados de versiones anteriores
+        eliminados = Post.objects.filter(
+            titulo__in=self.TITULOS_OBSOLETOS,
+            autor__username=SYSTEM_USERNAME,
+        ).delete()
+        if eliminados[0]:
+            self.stdout.write(self.style.WARNING(
+                f"Eliminados {eliminados[0]} posts con títulos obsoletos."
+            ))
 
         for receta in RECETAS:
             post, created = Post.objects.get_or_create(
