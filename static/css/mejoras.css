@@ -1,0 +1,467 @@
+/* =====================================================
+   NIDO MOZZARELLA — Mejoras visuales
+   ===================================================== */
+
+/* ===== NAVBAR STICKY REDISEÑADO ===== */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background-color: #F5C842;
+    border-bottom: 2px solid #D7A800;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    box-shadow: 0 2px 8px rgba(61, 43, 0, 0.15);
+    gap: 1rem;
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #3D2B00;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Links centrales */
+.navbar-center {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.navbar-center a {
+    color: #3D2B00;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 8px;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.navbar-center a:hover,
+.navbar-center a.active {
+    background-color: rgba(61, 43, 0, 0.12);
+}
+
+.navbar-center a.nav-jugar {
+    background-color: #3D2B00;
+    color: #FFF8DC;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+}
+
+.navbar-center a.nav-jugar:hover {
+    background-color: #5a4010;
+}
+
+/* Sección derecha */
+.navbar-auth {
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* ===== DROPDOWN GENÉRICO ===== */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-trigger {
+    background: none;
+    border: 2px solid #3D2B00;
+    border-radius: 24px;
+    padding: 0.35rem 0.9rem;
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #3D2B00;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.dropdown-trigger:hover {
+    background-color: rgba(61, 43, 0, 0.1);
+}
+
+.dropdown-trigger.open {
+    background-color: rgba(61, 43, 0, 0.12);
+}
+
+/* Avatar circular en el trigger */
+.nav-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #3D2B00;
+}
+
+.nav-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #FFF8DC;
+    border: 2px solid #3D2B00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Menú desplegable */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #fff;
+    border: 2px solid #D7A800;
+    border-radius: 12px;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(61, 43, 0, 0.18);
+    overflow: hidden;
+    z-index: 300;
+    flex-direction: column;
+}
+
+.dropdown-menu.show {
+    display: flex;
+}
+
+.dropdown-menu a,
+.dropdown-logout {
+    display: block;
+    padding: 0.65rem 1rem;
+    color: #3D2B00;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.12s;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'Noto Sans', sans-serif;
+    text-align: left;
+    width: 100%;
+}
+
+.dropdown-menu a:hover,
+.dropdown-logout:hover {
+    background-color: #FFF8DC;
+}
+
+.dropdown-stats {
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #7a5c00;
+    background-color: #FFF8DC;
+    border-top: 1px solid #ecdba0;
+    border-bottom: 1px solid #ecdba0;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #ecdba0;
+    margin: 0.2rem 0;
+}
+
+/* ===== HAMBURGER (mobile) ===== */
+.hamburger {
+    display: none;
+    background: none;
+    border: 2px solid #3D2B00;
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #3D2B00;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+@media (max-width: 700px) {
+    .hamburger { display: block; }
+
+    .navbar-center {
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: #F5C842;
+        border-bottom: 2px solid #D7A800;
+        flex-direction: column;
+        padding: 0.5rem 1rem 1rem;
+        gap: 0.2rem;
+        z-index: 199;
+    }
+
+    .navbar-center.open { display: flex; }
+
+    .navbar-center a { padding: 0.6rem 0.8rem; font-size: 1rem; }
+}
+
+/* ===== PERFIL — card mejorada ===== */
+.profile-card {
+    background: #fff;
+    border: 2px solid #D7C6A8;
+    border-radius: 18px;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(107,78,22,.10);
+}
+
+.profile-foto {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #F5C842;
+    margin-bottom: 1rem;
+}
+
+.profile-foto-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #F5C842;
+    border: 3px solid #D7A800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    margin: 0 auto 1rem;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0.8rem 0;
+}
+
+/* ===== JUEGO ===== */
+.game-wrapper {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 2px solid #D7C6A8;
+    border-radius: 14px 14px 0 0;
+    padding: 0.8rem 1.5rem;
+    font-weight: 900;
+    font-size: 1rem;
+    color: #3D2B00;
+}
+
+.game-title { font-size: 1.1rem; }
+
+.game-stat {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #3D2B00;
+    min-width: 80px;
+    text-align: center;
+}
+
+#timer { color: #3D2B00; transition: color 0.3s; }
+#timer.danger { color: #cc0000; }
+
+.game-arena {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    background: linear-gradient(160deg, #FFF8DC 0%, #FFF3B0 100%);
+    border: 2px solid #D7C6A8;
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+}
+
+/* Ratón */
+#rat {
+    position: absolute;
+    font-size: 2.5rem;
+    transition: left 0.6s cubic-bezier(.4,0,.2,1), top 0.6s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+}
+
+/* Quesos */
+.cheese-item {
+    position: absolute;
+    font-size: 2.2rem;
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.1s;
+    line-height: 1;
+    animation: cheese-pop 0.2s ease-out;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
+}
+
+.cheese-item:hover { transform: scale(1.2); }
+.cheese-item:active { transform: scale(0.9); }
+
+@keyframes cheese-pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* Indicador flotante de puntaje */
+.score-popup {
+    position: absolute;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #3D2B00;
+    pointer-events: none;
+    animation: float-up 0.8s ease-out forwards;
+    z-index: 10;
+}
+
+.score-popup-neg {
+    color: #cc0000;
+}
+
+/* Basura — borde rojo para distinguirla */
+.trash-item {
+    filter: drop-shadow(0 0 6px rgba(200,0,0,0.45));
+    animation: cheese-pop 0.2s ease-out, trash-shake 0.4s ease-out 0.2s;
+}
+
+@keyframes trash-shake {
+    0%, 100% { transform: rotate(0deg); }
+    25%       { transform: rotate(-8deg); }
+    75%       { transform: rotate(8deg); }
+}
+
+@keyframes float-up {
+    from { opacity: 1; transform: translateY(0);   }
+    to   { opacity: 0; transform: translateY(-40px); }
+}
+
+/* Overlays de inicio / fin */
+.game-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 248, 220, 0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    gap: 0.8rem;
+    z-index: 50;
+}
+
+.game-overlay h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #3D2B00;
+}
+
+.game-overlay p {
+    font-size: 1rem;
+    color: #6B4E16;
+    max-width: 380px;
+}
+
+.game-legend {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #3D2B00;
+    background: #F5C842;
+    border-radius: 12px;
+    padding: 0.6rem 1.2rem;
+}
+
+.btn-large {
+    padding: 0.7rem 1.8rem;
+    font-size: 1.05rem;
+}
+
+.final-score,
+.final-coins {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #3D2B00;
+}
+
+/* ===================================================
+   TABLA SCROLL — wrapper para tablas en mobile
+   Uso: <div class="table-scroll"><table>…</table></div>
+   =================================================== */
+.table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 14px;
+    /* Evitar que el shadow de la tabla quede cortado */
+    padding-bottom: 2px;
+}
+
+/* ===================================================
+   RESPONSIVE — mobile
+   =================================================== */
+@media (max-width: 700px) {
+
+    /* Navbar: brand más chico en pantallas muy pequeñas */
+    .navbar-brand { font-size: 1.1rem; }
+
+    /* Hero */
+    .hero h1 { font-size: 1.6rem; }
+    .hero p  { font-size: 0.95rem; }
+
+    /* Botones del hero apilados */
+    .hero .btn { display: block; margin: 0.4rem auto; width: fit-content; }
+
+    /* Tabla más compacta antes del scroll */
+    .data-table th,
+    .data-table td { padding: 0.5rem 0.6rem; font-size: 0.85rem; }
+
+    /* Juego: arena un poco más alta para aprovechar el espacio vertical */
+    .game-arena { height: 400px; }
+
+    /* Quesos más grandes = más fáciles de tocar */
+    .cheese-item { font-size: 2.8rem; }
+
+    /* Leyenda del juego apilada */
+    .game-legend { flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+
+    /* Overlay del juego: menos padding */
+    .game-overlay { padding: 1.2rem; gap: 0.6rem; }
+    .game-overlay h2 { font-size: 1.5rem; }
+
+    /* Botones del end-overlay apilados */
+    .game-overlay .btn-large { width: 100%; text-align: center; }
+
+    /* Perfil: stats centradas */
+    .profile-stats { gap: 0.4rem; }
+
+    /* Post detail: padding más chico */
+    .post-detail { padding: 1.2rem; }
+}

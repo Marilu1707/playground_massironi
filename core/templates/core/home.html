@@ -1,0 +1,88 @@
+{% extends "base/base.html" %}
+
+{% block title %}Inicio — Nido Mozzarella 🧀{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="hero">
+    <h1>🧀 Bienvenido al Nido Mozzarella</h1>
+    <p>La pizzería kawaii más deliciosa del universo digital.<br>
+       Explorá recetas, gestioná el inventario y completá pedidos.</p>
+    {% if not user.is_authenticated %}
+        <a href="{% url 'signup' %}" class="btn btn-primary">Unirse al nido 🐭</a>
+        <a href="{% url 'login' %}" class="btn btn-secondary" style="margin-left:0.5rem;">Ingresar</a>
+    {% else %}
+        <a href="{% url 'post_list' %}" class="btn btn-primary">Ver recetas 📖</a>
+        <a href="{% url 'juego_list' %}" class="btn btn-secondary" style="margin-left:0.5rem;">Mis pedidos 🍕</a>
+    {% endif %}
+</div>
+
+<!-- ÚLTIMAS RECETAS -->
+<section>
+    <h2 class="section-title">Últimas recetas del nido</h2>
+    <p class="section-subtitle">Novedades, lore y recetas secretas</p>
+
+    {% if ultimos_posts %}
+        <div class="cards-grid">
+            {% for post in ultimos_posts %}
+            <div class="card">
+                {% if post.imagen %}
+                    <img src="{{ post.imagen.url }}" alt="{{ post.titulo }}" class="card-img">
+                {% else %}
+                    <div style="height:180px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:3rem;">🧀</div>
+                {% endif %}
+                <div class="card-body">
+                    <p class="card-title">{{ post.titulo }}</p>
+                    <p class="card-subtitle">{{ post.subtitulo }}</p>
+                    <p class="card-text">{{ post.cuerpo|truncatewords:20 }}</p>
+                    <a href="{% url 'post_detail' post.id %}" class="btn btn-primary">Leer más</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div style="text-align:center; margin-top:1.5rem;">
+            <a href="{% url 'post_list' %}" class="btn btn-secondary">Ver todas las recetas →</a>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>🍕 Todavía no hay recetas publicadas. ¡Volvé pronto!</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- MANUAL DE CONVIVENCIA -->
+<section style="margin-top:3rem;">
+    <h2 class="section-title">📋 Cómo funciona el Nido</h2>
+    <p class="section-subtitle">Todo lo que necesitás saber para vivir en el nido</p>
+    <div class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+
+        <div class="card" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">🪙</div>
+            <p class="card-title">Qué son las monedas</p>
+            <p class="card-text">La moneda interna del nido. Empezás con 100 al registrarte. Úsalas para comprar y desbloquear contenido.</p>
+        </div>
+
+        <div class="card" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">⬆️</div>
+            <p class="card-title">Cómo ganar monedas</p>
+            <p class="card-text">Vendé tus recetas premium a otros usuarios. También podés canjear tus puntos: 10 puntos = 5 monedas.</p>
+        </div>
+
+        <div class="card" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">🛒</div>
+            <p class="card-title">Cómo gastarlas</p>
+            <p class="card-text">Comprá quesos del inventario o desbloqueá recetas premium publicadas por otros habitantes del nido.</p>
+        </div>
+
+        <div class="card" style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">🏪</div>
+            <p class="card-title">El Mercado</p>
+            <p class="card-text">El lugar donde todo sucede. Explorá quesos y recetas disponibles.</p>
+            <a href="{% url 'mercado_home' %}" class="btn btn-primary" style="margin-top:0.5rem;">Ir al mercado</a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base/base.html" %}
+
+{% block title %}Acerca de — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="post-detail" style="max-width:700px; margin:0 auto;">
+    <h1 class="section-title">Acerca de mí 🐭</h1>
+    <p class="section-subtitle">La persona detrás del nido</p>
+
+    <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.5rem;">
+        <div style="font-size:5rem; line-height:1;">👩‍💻</div>
+        <div>
+            <h2 style="font-size:1.6rem; font-weight:900; margin-bottom:0.3rem;">María Luján Massironi</h2>
+            <p style="color:#9B7B3A; font-weight:700;">Estudiante de Negocios Digitales — UADE</p>
+        </div>
+    </div>
+
+    <p style="margin-bottom:1rem;">
+        Soy estudiante de la carrera de <strong>Negocios Digitales en UADE</strong>, con formación en
+        marketing digital, análisis de datos y desarrollo web. Mi experiencia como
+        <strong>Asistente Virtual</strong> me enseñó a combinar eficiencia operativa con pensamiento
+        estratégico para resolver problemas reales.
+    </p>
+
+    <p style="margin-bottom:1.5rem;">
+        Me interesa construir soluciones tecnológicas que sean funcionales, bonitas y fáciles de usar.
+        <strong>Nido Mozzarella</strong> nació como un proyecto de portfolio para demostrar mis habilidades
+        en desarrollo web con Django, combinando una identidad visual kawaii con funcionalidades reales
+        como gestión de inventario, blog y sistema de pedidos.
+    </p>
+
+    <h3 style="font-weight:900; margin-bottom:0.8rem;">🛠 Habilidades</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;">
+        <span class="badge badge-green">Python</span>
+        <span class="badge badge-green">Django</span>
+        <span class="badge badge-green">SQL</span>
+        <span class="badge badge-orange">React.js</span>
+        <span class="badge badge-orange">Análisis de Datos</span>
+        <span class="badge badge-green">Marketing Digital</span>
+        <span class="badge badge-orange">Gestión de Proyectos</span>
+    </div>
+
+    <h3 style="font-weight:900; margin-bottom:0.8rem;">📌 Sobre este proyecto</h3>
+    <p>
+        <strong>Nido Mozzarella</strong> es una aplicación web Django con temática de pizzería kawaii.
+        Permite a los usuarios registrarse, explorar recetas del blog, gestionar un inventario de
+        ingredientes y completar pedidos para ganar puntos. El panel de administración permite a los
+        chefs (administradores) publicar y editar contenido.
+    </p>
+
+    <div style="margin-top:1.5rem;">
+        <a href="{% url 'home' %}" class="btn btn-secondary">← Volver al inicio</a>
+    </div>
+</div>
+
+{% endblock %}

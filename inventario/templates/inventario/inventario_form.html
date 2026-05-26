@@ -1,0 +1,29 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ accion }} queso — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="form-container">
+    <h1 class="form-title">🧀 {{ accion }} queso</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <button type="submit" class="btn btn-primary">{{ accion }}</button>
+            <a href="{% url 'inventario_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

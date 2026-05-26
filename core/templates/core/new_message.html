@@ -1,0 +1,31 @@
+{% extends "base/base.html" %}
+
+{% block title %}Nuevo mensaje — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="form-container">
+    <h1 class="form-title">📩 Nuevo mensaje</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+            Enviar mensaje 📨
+        </button>
+    </form>
+
+    <div style="text-align:center; margin-top:1rem;">
+        <a href="{% url 'messages_list' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</div>
+
+{% endblock %}

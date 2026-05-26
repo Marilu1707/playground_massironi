@@ -1,0 +1,271 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Jugar — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="game-wrapper">
+
+    <div class="game-header">
+        <div class="game-stat">⏱️ <span id="timer">60</span>s</div>
+        <h2 class="game-title">🧀 ¡Atrapa los quesos!</h2>
+        <div class="game-stat">🌟 <span id="score">0</span></div>
+    </div>
+
+    <div id="game-arena" class="game-arena">
+        <div id="rat">🐭</div>
+    </div>
+
+    <!-- Overlay inicio -->
+    <div id="start-overlay" class="game-overlay">
+        <h2>🐭 Nido Mozzarella</h2>
+        <p>¡Atrapa los quesos, evitá la basura y guiá al ratoncito con tu toque!<br>Tenés 60 segundos.</p>
+        <div class="game-legend">
+            <span>🧀 = +1</span>
+            <span>🫕 = +3</span>
+            <span>⭐ = +5</span>
+            <span>🗑️ = -2</span>
+        </div>
+        <button id="start-btn" class="btn btn-primary btn-large">¡Jugar! 🐭</button>
+        <a href="{% url 'juego_list' %}" class="btn btn-secondary">Ver mis pedidos</a>
+    </div>
+
+    <!-- Overlay fin -->
+    <div id="end-overlay" class="game-overlay" style="display:none;">
+        <h2>🎉 ¡Tiempo!</h2>
+        <p class="final-score">Puntos ganados: <strong id="final-pts">0</strong></p>
+        <p class="final-coins">Monedas ganadas: <strong id="final-coins-display">0</strong> 🪙</p>
+        <div style="display:flex; gap:0.8rem; justify-content:center; margin-top:0.5rem; flex-wrap:wrap;">
+            <button id="save-btn" class="btn btn-primary btn-large">Guardar y salir 💾</button>
+            <button id="retry-btn" class="btn btn-secondary btn-large">Jugar de nuevo</button>
+        </div>
+        <p id="save-msg" style="font-size:0.85rem; color:#6B4E16; margin-top:0.5rem; display:none;">Guardando...</p>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var DURATION           = 60;
+    var CHEESE_INTERVAL_MS = 750;
+    var CHEESE_LIFETIME_MS = 2600;
+    var TRASH_CHANCE       = 0.22;   // 22% de los spawns serán basura
+
+    var CHEESE_TYPES = [
+        { emoji: '🧀', pts:  1, coins: 0, weight: 55, isTrash: false },
+        { emoji: '🫕',  pts:  3, coins: 1, weight: 28, isTrash: false },
+        { emoji: '⭐',  pts:  5, coins: 2, weight: 10, isTrash: false },
+        { emoji: '🗑️', pts: -2, coins: 0, weight: 0,  isTrash: true  },
+    ];
+
+    var score = 0, coins = 0, timeLeft = DURATION, gameRunning = false;
+    var timerHandle = null, cheeseHandle = null;
+
+    var arena        = document.getElementById('game-arena');
+    var rat          = document.getElementById('rat');
+    var timerEl      = document.getElementById('timer');
+    var scoreEl      = document.getElementById('score');
+    var startOverlay = document.getElementById('start-overlay');
+    var endOverlay   = document.getElementById('end-overlay');
+
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function weightedRandom(types) {
+        var total = types.reduce(function (a, t) { return a + t.weight; }, 0);
+        var r = Math.random() * total;
+        for (var i = 0; i < types.length; i++) {
+            r -= types[i].weight;
+            if (r <= 0) return types[i];
+        }
+        return types[0];
+    }
+
+    // ── Rat sigue el toque / click ────────────────────────────
+    function moveRatTo(x, y) {
+        var size = 50;
+        var maxX = arena.offsetWidth  - size;
+        var maxY = arena.offsetHeight - size;
+        rat.style.left = Math.min(Math.max(0, x - size / 2), maxX) + 'px';
+        rat.style.top  = Math.min(Math.max(0, y - size / 2), maxY) + 'px';
+    }
+
+    arena.addEventListener('click', function (e) {
+        if (!gameRunning) return;
+        if (e.target.classList.contains('cheese-item')) return;
+        var rect = arena.getBoundingClientRect();
+        moveRatTo(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    function handleTouch(e) {
+        if (!gameRunning) return;
+        // Si el dedo está sobre un queso/basura, dejamos que el cheese-item lo maneje
+        if (e.target.classList.contains('cheese-item')) return;
+        e.preventDefault();
+        var rect  = arena.getBoundingClientRect();
+        var touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+        if (!touch) return;
+        moveRatTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    }
+
+    arena.addEventListener('touchstart', handleTouch, { passive: false });
+    arena.addEventListener('touchmove',  handleTouch, { passive: false });
+
+    // ── Spawn item (queso o basura) ───────────────────────────
+    function spawnItem() {
+        if (!gameRunning) return;
+
+        var isTrash = Math.random() < TRASH_CHANCE;
+        var type;
+        if (isTrash) {
+            type = CHEESE_TYPES.find(function (t) { return t.isTrash; });
+        } else {
+            var cheeseOnly = CHEESE_TYPES.filter(function (t) { return !t.isTrash; });
+            type = weightedRandom(cheeseOnly);
+        }
+
+        var item = document.createElement('div');
+        item.className   = 'cheese-item' + (isTrash ? ' trash-item' : '');
+        item.textContent = type.emoji;
+
+        var w = arena.offsetWidth  - 56;
+        var h = arena.offsetHeight - 56;
+        item.style.left = randInt(5, w) + 'px';
+        item.style.top  = randInt(5, h) + 'px';
+
+        // Lógica de recolección compartida entre click y touch
+        function collectItem() {
+            if (!gameRunning || !item.parentNode) return;
+
+            score = Math.max(0, score + type.pts);       // no bajar de 0
+            if (!isTrash) coins += type.coins;
+            scoreEl.textContent = score;
+
+            // Indicador flotante
+            var pop = document.createElement('span');
+            pop.className   = 'score-popup' + (isTrash ? ' score-popup-neg' : '');
+            pop.textContent = (type.pts > 0 ? '+' : '') + type.pts;
+            pop.style.left  = item.style.left;
+            pop.style.top   = item.style.top;
+            arena.appendChild(pop);
+            setTimeout(function () { if (pop.parentNode) pop.remove(); }, 820);
+
+            // Reacción del rat
+            rat.textContent = isTrash ? '🤢' : '😊';
+            setTimeout(function () { if (gameRunning) rat.textContent = '🐭'; }, 500);
+
+            item.remove();
+        }
+
+        // Desktop: click
+        item.addEventListener('click', function (e) {
+            e.stopPropagation();
+            collectItem();
+        });
+
+        // Mobile: touchend (touchstart fue ignorado por handleTouch arriba)
+        item.addEventListener('touchend', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            collectItem();
+        });
+
+        arena.appendChild(item);
+
+        var fadeTimer = setTimeout(function () {
+            if (item.parentNode) {
+                item.style.opacity = '0';
+                setTimeout(function () { if (item.parentNode) item.remove(); }, 300);
+            }
+        }, CHEESE_LIFETIME_MS);
+
+        item._fadeTimer = fadeTimer;
+    }
+
+    // ── Iniciar ───────────────────────────────────────────────
+    function startGame() {
+        score = 0; coins = 0; timeLeft = DURATION;
+        scoreEl.textContent = '0';
+        timerEl.textContent = DURATION;
+        timerEl.classList.remove('danger');
+        rat.textContent = '🐭';
+        // Inicializar siempre en px para que las transiciones funcionen
+        rat.style.left  = Math.round(arena.offsetWidth  / 2 - 25) + 'px';
+        rat.style.top   = Math.round(arena.offsetHeight / 2 - 25) + 'px';
+        gameRunning = true;
+
+        arena.querySelectorAll('.cheese-item, .score-popup').forEach(function (el) { el.remove(); });
+        startOverlay.style.display = 'none';
+        endOverlay.style.display   = 'none';
+
+        cheeseHandle = setInterval(spawnItem, CHEESE_INTERVAL_MS);
+
+        timerHandle = setInterval(function () {
+            timeLeft--;
+            timerEl.textContent = timeLeft;
+            if (timeLeft <= 10) timerEl.classList.add('danger');
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    // ── Terminar ──────────────────────────────────────────────
+    function endGame() {
+        gameRunning = false;
+        clearInterval(timerHandle);
+        clearInterval(cheeseHandle);
+        rat.textContent = '😴';
+        arena.querySelectorAll('.cheese-item').forEach(function (el) {
+            clearTimeout(el._fadeTimer);
+            el.remove();
+        });
+        document.getElementById('final-pts').textContent           = score;
+        document.getElementById('final-coins-display').textContent = coins;
+        endOverlay.style.display = 'flex';
+    }
+
+    // ── Guardar ───────────────────────────────────────────────
+    function saveScore() {
+        var saveBtn = document.getElementById('save-btn');
+        var saveMsg = document.getElementById('save-msg');
+        saveBtn.disabled      = true;
+        saveMsg.style.display = 'block';
+
+        fetch('{% url "juego_puntuar" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken':  '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ puntos: score, monedas: coins }),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.ok) {
+                window.location.href = '{% url "juego_list" %}';
+            } else {
+                saveMsg.textContent  = 'Error al guardar. Intentá de nuevo.';
+                saveBtn.disabled     = false;
+            }
+        })
+        .catch(function () {
+            window.location.href = '{% url "juego_list" %}';
+        });
+    }
+
+    // ── Botones ───────────────────────────────────────────────
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('save-btn').addEventListener('click', saveScore);
+    document.getElementById('retry-btn').addEventListener('click', function () {
+        endOverlay.style.display   = 'none';
+        startOverlay.style.display = 'flex';
+        timerEl.classList.remove('danger');
+    });
+
+})();
+</script>
+{% endblock %}

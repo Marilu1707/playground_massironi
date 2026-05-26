@@ -1,0 +1,70 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ post.titulo }} — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="post-detail">
+    {% if post.imagen %}
+        <img src="{{ post.imagen.url }}" alt="{{ post.titulo }}">
+    {% endif %}
+
+    <h1 style="font-size:2rem; font-weight:900; margin-bottom:0.3rem;">{{ post.titulo }}</h1>
+    {% if post.subtitulo %}
+        <p style="font-size:1.1rem; color:#9B7B3A; margin-bottom:0.8rem;">{{ post.subtitulo }}</p>
+    {% endif %}
+
+    <p class="post-meta">
+        ✍️ {{ post.autor.get_full_name|default:post.autor.username }}
+        &nbsp;·&nbsp;
+        📅 {{ post.fecha|date:"d \d\e F \d\e Y" }}
+        {% if post.es_premium %}
+            &nbsp;·&nbsp; <span class="badge badge-orange">🪙 Premium · {{ post.precio_monedas }} monedas</span>
+        {% endif %}
+    </p>
+
+    <hr style="border:none; border-top:2px solid var(--border); margin:1rem 0;">
+
+    {% if desbloqueado %}
+        <div style="line-height:1.8; font-size:1rem;">
+            {{ post.cuerpo|linebreaks }}
+        </div>
+    {% else %}
+        <!-- PREVIEW + PAYWALL -->
+        <div style="line-height:1.8; font-size:1rem; position:relative;">
+            <div style="max-height:120px; overflow:hidden; mask-image:linear-gradient(to bottom, black 40%, transparent 100%);">
+                {{ post.preview|linebreaks }}
+            </div>
+        </div>
+        <div style="text-align:center; margin:2rem 0; padding:1.5rem; background:var(--card-bg); border:2px dashed var(--accent); border-radius:12px;">
+            <p style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">🔒 Receta premium</p>
+            <p style="color:#888; margin-bottom:1rem;">Desbloqueá la receta completa por <strong>{{ post.precio_monedas }} monedas</strong></p>
+            {% if user.is_authenticated %}
+                <p style="font-size:0.9rem; margin-bottom:1rem;">Tenés <strong>🪙 {{ user.perfil.monedas }}</strong> monedas</p>
+                <form method="post" action="{% url 'comprar_receta' post.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary"
+                        {% if user.perfil.monedas < post.precio_monedas %}disabled{% endif %}>
+                        {% if user.perfil.monedas < post.precio_monedas %}
+                            Monedas insuficientes
+                        {% else %}
+                            Desbloquear por 🪙{{ post.precio_monedas }}
+                        {% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary">Iniciá sesión para desbloquear</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div style="margin-top:2rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <a href="{% url 'post_list' %}" class="btn btn-secondary">← Volver a recetas</a>
+        {% if user == post.autor or user.is_staff %}
+            <a href="{% url 'post_edit' post.id %}" class="btn btn-primary">Editar</a>
+            <a href="{% url 'post_delete' post.id %}" class="btn btn-danger">Eliminar</a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

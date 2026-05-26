@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nido Mozzarella 🧀{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/nido.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mejoras.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <a href="{% url 'home' %}" class="navbar-brand">🐭 Nido Mozzarella</a>
+
+    <!-- Hamburger (mobile) -->
+    <button class="hamburger" id="hamburger" aria-label="Menú">☰</button>
+
+    <!-- Links centrales -->
+    <div class="navbar-center" id="nav-center">
+        <a href="{% url 'home' %}">Inicio</a>
+        <a href="{% url 'post_list' %}">Recetas</a>
+        <a href="{% url 'inventario_list' %}">Inventario</a>
+        <a href="{% url 'juego_game' %}" class="nav-jugar">Jugar 🐭</a>
+        <a href="{% url 'about' %}">Acerca de</a>
+    </div>
+
+    <!-- Auth derecha -->
+    <div class="navbar-auth">
+        {% if user.is_authenticated %}
+            <div class="dropdown" id="dropdown-user">
+                <button class="dropdown-trigger" id="trigger-user">
+                    {% if user.perfil.foto_perfil %}
+                        <img src="{{ user.perfil.foto_perfil.url }}" class="nav-avatar" alt="Avatar">
+                    {% else %}
+                        <span class="nav-avatar-placeholder">🐭</span>
+                    {% endif %}
+                    {{ user.username }} ▾
+                </button>
+                <div class="dropdown-menu" id="menu-user">
+                    <a href="{% url 'profile' %}">👤 Mi Perfil</a>
+                    <a href="{% url 'juego_list' %}">🍕 Mis Pedidos</a>
+                    <a href="{% url 'messages_list' %}">📩 Mensajes</a>
+                    <div class="dropdown-stats">
+                        🌟 {{ user.perfil.puntos }} pts &nbsp;|&nbsp; 🪙 {{ user.perfil.monedas }} monedas
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-logout">Salir 👋</button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="dropdown" id="dropdown-guest">
+                <button class="dropdown-trigger" id="trigger-guest">Ingresar ▾</button>
+                <div class="dropdown-menu" id="menu-guest">
+                    <a href="{% url 'login' %}">🔑 Tengo cuenta</a>
+                    <a href="{% url 'signup' %}">🐭 Crear cuenta</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ===== MENSAJES FLASH ===== -->
+{% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <p>🧀 Nido Mozzarella &copy; 2025 — Hecho con amor por María Luján Massironi</p>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+(function () {
+    // Dropdown genérico
+    function initDropdown(triggerId, menuId) {
+        const trigger = document.getElementById(triggerId);
+        const menu    = document.getElementById(menuId);
+        if (!trigger || !menu) return;
+        trigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const open = menu.classList.toggle('show');
+            trigger.classList.toggle('open', open);
+        });
+    }
+
+    initDropdown('trigger-user',  'menu-user');
+    initDropdown('trigger-guest', 'menu-guest');
+
+    // Cerrar dropdowns al hacer click afuera
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.dropdown-menu.show').forEach(function (m) {
+            m.classList.remove('show');
+        });
+        document.querySelectorAll('.dropdown-trigger.open').forEach(function (t) {
+            t.classList.remove('open');
+        });
+    });
+
+    // Hamburger mobile
+    var ham = document.getElementById('hamburger');
+    var nav = document.getElementById('nav-center');
+    if (ham && nav) {
+        ham.addEventListener('click', function (e) {
+            e.stopPropagation();
+            nav.classList.toggle('open');
+        });
+    }
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

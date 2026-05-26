@@ -1,0 +1,52 @@
+{% extends "base/base.html" %}
+
+{% block title %}Mensajes — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h1 class="section-title">📩 Mensajes</h1>
+        <p class="section-subtitle">
+            {% if user.is_staff %}Todos los mensajes recibidos{% else %}Tus mensajes enviados{% endif %}
+        </p>
+    </div>
+    <a href="{% url 'new_message' %}" class="btn btn-primary">+ Nuevo mensaje</a>
+</div>
+
+{% if mensajes %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                {% if user.is_staff %}<th>Remitente</th>{% endif %}
+                <th>Asunto</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mensaje in mensajes %}
+            <tr>
+                {% if user.is_staff %}<td>{{ mensaje.remitente.username }}</td>{% endif %}
+                <td>{{ mensaje.asunto }}</td>
+                <td>{{ mensaje.fecha|date:"d/m/Y H:i" }}</td>
+                <td>
+                    {% if mensaje.leido %}
+                        <span class="badge badge-green">Leído</span>
+                    {% else %}
+                        <span class="badge badge-orange">Pendiente</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <p>📭 No hay mensajes aún. ¡Enviá el primero!</p>
+        <br>
+        <a href="{% url 'new_message' %}" class="btn btn-primary">Enviar mensaje</a>
+    </div>
+{% endif %}
+
+{% endblock %}

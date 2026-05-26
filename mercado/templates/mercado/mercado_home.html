@@ -1,0 +1,94 @@
+{% extends "base/base.html" %}
+
+{% block title %}Mercado — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:0.5rem;">
+    <div>
+        <h1 class="section-title">🏪 El Mercado</h1>
+        <p class="section-subtitle">Comprá quesos y desbloqueá recetas con tus monedas</p>
+    </div>
+    {% if user.is_authenticated %}
+        <div style="text-align:right;">
+            <span style="font-size:1.1rem; font-weight:700;">🪙 {{ user.perfil.monedas }} monedas</span><br>
+            <a href="{% url 'historial' %}" style="font-size:0.85rem; color:var(--accent);">Ver historial →</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- QUESOS -->
+<section style="margin-bottom:2.5rem;">
+    <h2 class="section-title" style="font-size:1.3rem;">🧀 Quesos disponibles</h2>
+    {% if quesos %}
+        <div class="cards-grid">
+            {% for queso in quesos %}
+            <div class="card">
+                {% if queso.imagen %}
+                    <img src="{{ queso.imagen.url }}" alt="{{ queso.nombre }}" class="card-img">
+                {% else %}
+                    <div style="height:140px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:3rem;">🧀</div>
+                {% endif %}
+                <div class="card-body">
+                    <p class="card-title">{{ queso.nombre }}</p>
+                    <p class="card-text">{{ queso.descripcion|truncatewords:10 }}</p>
+                    <p style="font-size:0.85rem; color:#888; margin-bottom:0.5rem;">Stock: {{ queso.stock }}</p>
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'comprar_queso' queso.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary"
+                                {% if user.perfil.monedas < queso.precio_monedas %}disabled title="No tenés suficientes monedas"{% endif %}>
+                                Comprar 🪙{{ queso.precio_monedas }}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-secondary">Ingresá para comprar</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state"><p>🧀 No hay quesos disponibles en este momento.</p></div>
+    {% endif %}
+</section>
+
+<!-- RECETAS PREMIUM -->
+<section>
+    <h2 class="section-title" style="font-size:1.3rem;">📖 Recetas premium</h2>
+    {% if recetas_premium %}
+        <div class="cards-grid">
+            {% for post in recetas_premium %}
+            <div class="card">
+                {% if post.imagen %}
+                    <img src="{{ post.imagen.url }}" alt="{{ post.titulo }}" class="card-img">
+                {% else %}
+                    <div style="height:140px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:3rem;">📖</div>
+                {% endif %}
+                <div class="card-body">
+                    <p class="card-title">{{ post.titulo }}</p>
+                    <p style="font-size:0.8rem; color:#9B7B3A; margin-bottom:0.3rem;">
+                        ✍️ {{ post.autor.get_full_name|default:post.autor.username }}
+                    </p>
+                    <p class="card-text">{{ post.preview|default:post.cuerpo|truncatewords:15 }}</p>
+                    {% if user.is_authenticated %}
+                        {% if post.id in compras_usuario or user == post.autor or user.is_staff %}
+                            <a href="{% url 'post_detail' post.id %}" class="btn btn-secondary">✅ Ya desbloqueada</a>
+                        {% else %}
+                            <a href="{% url 'post_detail' post.id %}" class="btn btn-primary">
+                                Desbloquear 🪙{{ post.precio_monedas }}
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-secondary">Ingresá para desbloquear</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state"><p>📖 No hay recetas premium publicadas todavía.</p></div>
+    {% endif %}
+</section>
+
+{% endblock %}

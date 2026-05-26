@@ -1,0 +1,32 @@
+{% extends "base/base.html" %}
+
+{% block title %}Nuevo pedido — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="form-container">
+    <h1 class="form-title">🍕 Hacer un pedido</h1>
+    <p style="text-align:center; color:#9B7B3A; margin-bottom:1.5rem;">
+        Elegí tu queso favorito y completá el pedido para ganar puntos 🌟
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <button type="submit" class="btn btn-primary">¡Pedir! 🧀</button>
+            <a href="{% url 'juego_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

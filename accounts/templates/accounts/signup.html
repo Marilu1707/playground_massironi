@@ -1,0 +1,32 @@
+{% extends "base/base.html" %}
+
+{% block title %}Registrarse — Nido Mozzarella{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1 class="form-title">🐭 Unirse al nido</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-errors">{{ field.errors }}</div>
+                {% endif %}
+                {% if field.help_text %}
+                    <small style="color:#9B7B3A;">{{ field.help_text }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+            Crear cuenta 🧀
+        </button>
+    </form>
+
+    <p style="text-align:center; margin-top:1rem; font-size:0.9rem;">
+        ¿Ya tenés cuenta? <a href="{% url 'login' %}" style="color:var(--text-brown); font-weight:700;">Ingresá aquí</a>
+    </p>
+</div>
+{% endblock %}

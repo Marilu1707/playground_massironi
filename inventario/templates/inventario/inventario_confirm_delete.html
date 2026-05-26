@@ -1,0 +1,19 @@
+{% extends "base/base.html" %}
+
+{% block title %}Eliminar queso — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div class="form-container">
+    <h1 class="form-title">🗑️ Eliminar queso</h1>
+    <p style="margin-bottom:1.5rem;">
+        ¿Estás segura de que querés eliminar <strong>"{{ queso.nombre }}"</strong> del inventario?
+    </p>
+    <form method="post" style="display:flex; gap:0.5rem;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        <a href="{% url 'inventario_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+{% endblock %}

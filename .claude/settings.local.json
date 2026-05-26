@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:portfolio-interactivo.vercel.app)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/juego/jugar/)",
+      "Bash(curl -sL \"https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=900&q=80\" -o media/posts/quesos_guia.jpg)",
+      "Bash(curl -sL \"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=900&q=80\" -o media/posts/pizza_margherita.jpg)",
+      "Bash(curl -sL \"https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80\" -o media/posts/bienvenida_nido.jpg)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)"
+    ]
+  }
+}

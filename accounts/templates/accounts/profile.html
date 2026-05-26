@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+
+{% block title %}Mi perfil — Nido Mozzarella{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+
+    {% if perfil.foto_perfil %}
+        <img src="{{ perfil.foto_perfil.url }}" alt="Foto de perfil" class="profile-foto">
+    {% else %}
+        <div class="profile-foto-placeholder">🐭</div>
+    {% endif %}
+
+    <h1 style="font-size:1.5rem; font-weight:900; margin-bottom:0.2rem;">
+        {% if perfil.user.first_name %}{{ perfil.user.first_name }} {{ perfil.user.last_name }}
+        {% else %}{{ perfil.user.username }}{% endif %}
+    </h1>
+    <p style="color:#9B7B3A; font-weight:700; margin-bottom:0.8rem;">@{{ perfil.user.username }}</p>
+
+    <div class="profile-stats">
+        <span class="badge badge-green">Nivel {{ perfil.nivel }}</span>
+        <span class="badge badge-orange">🌟 {{ perfil.puntos }} pts</span>
+        <span class="badge badge-green">🪙 {{ perfil.monedas }} monedas</span>
+    </div>
+
+    {% if perfil.bio %}
+        <p style="margin: 0.6rem 0;">{{ perfil.bio }}</p>
+    {% endif %}
+
+    {% if perfil.user.email %}
+        <p style="font-size:0.9rem; color:#9B7B3A; margin-bottom:0.2rem;">📧 {{ perfil.user.email }}</p>
+    {% endif %}
+    {% if perfil.link %}
+        <p style="font-size:0.9rem; margin-bottom:0.2rem;">
+            🔗 <a href="{{ perfil.link }}" target="_blank" style="color:var(--text-brown);">{{ perfil.link }}</a>
+        </p>
+    {% endif %}
+
+    <div style="display:flex; gap:0.8rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;">
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Editar perfil</a>
+        <a href="{% url 'change_password' %}" class="btn btn-secondary">Cambiar contraseña</a>
+        <a href="{% url 'juego_list' %}" class="btn btn-secondary">Mis pedidos 🍕</a>
+    </div>
+</div>
+{% endblock %}

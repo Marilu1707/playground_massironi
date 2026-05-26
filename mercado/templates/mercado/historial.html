@@ -1,0 +1,75 @@
+{% extends "base/base.html" %}
+
+{% block title %}Historial de monedas — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+    <div>
+        <h1 class="section-title">🪙 Mis monedas</h1>
+        <p class="section-subtitle">Historial de transacciones</p>
+    </div>
+    <div style="text-align:right;">
+        <p style="font-size:1.3rem; font-weight:900;">🪙 {{ user.perfil.monedas }}</p>
+        <p style="font-size:0.9rem; color:#888;">⭐ {{ user.perfil.puntos }} puntos</p>
+    </div>
+</div>
+
+<!-- CANJEAR PUNTOS -->
+{% if user.perfil.puntos >= ratio_puntos %}
+<div style="background:var(--card-bg); border:2px solid var(--accent); border-radius:12px; padding:1.2rem; margin-bottom:2rem;">
+    <h3 style="margin-bottom:0.5rem;">🔄 Canjear puntos por monedas</h3>
+    <p style="font-size:0.9rem; margin-bottom:0.8rem;">
+        Tenés <strong>{{ user.perfil.puntos }} puntos</strong>.
+        Ratio: cada {{ ratio_puntos }} puntos = {{ ratio_monedas }} monedas.
+    </p>
+    <form method="post" action="{% url 'canjear_puntos' %}">
+        {% csrf_token %}
+        <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem; cursor:pointer;">
+            {{ form_canje.confirmar }}
+            <span style="font-size:0.9rem;">{{ form_canje.confirmar.label }}</span>
+        </label>
+        <button type="submit" class="btn btn-primary">Canjear ahora</button>
+    </form>
+</div>
+{% else %}
+<div style="background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:1.2rem; margin-bottom:2rem; color:#888;">
+    <p>Necesitás al menos <strong>{{ ratio_puntos }} puntos</strong> para canjear. Tenés {{ user.perfil.puntos }}.</p>
+</div>
+{% endif %}
+
+<!-- HISTORIAL -->
+{% if transacciones %}
+    <div class="table-scroll">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Monedas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transacciones %}
+            <tr>
+                <td style="font-size:0.85rem; color:#888;">{{ t.fecha|date:"d/m/Y H:i" }}</td>
+                <td><span class="badge badge-{% if t.monto > 0 %}green{% else %}orange{% endif %}">{{ t.get_tipo_display }}</span></td>
+                <td>{{ t.descripcion }}</td>
+                <td style="font-weight:700; color:{% if t.monto > 0 %}green{% else %}#c0392b{% endif %};">
+                    {{ t.monto|stringformat:"+d" }} 🪙
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>{# /table-scroll #}
+{% else %}
+    <div class="empty-state"><p>🪙 Todavía no tenés transacciones.</p></div>
+{% endif %}
+
+<div style="margin-top:1.5rem;">
+    <a href="{% url 'mercado_home' %}" class="btn btn-secondary">← Volver al mercado</a>
+</div>
+
+{% endblock %}

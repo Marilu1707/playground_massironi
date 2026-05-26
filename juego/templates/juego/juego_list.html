@@ -1,0 +1,74 @@
+{% extends "base/base.html" %}
+
+{% block title %}Mis Pedidos — Nido Mozzarella{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:0.5rem;">
+    <div>
+        <h1 class="section-title">🍕 Mis Pedidos</h1>
+        <p class="section-subtitle">Tu historial en el nido</p>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <a href="{% url 'juego_game' %}" class="btn btn-primary">Jugar 🐭</a>
+        <a href="{% url 'juego_create' %}" class="btn btn-secondary">+ Pedido manual</a>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div style="background:var(--white); border:2px solid var(--border); border-radius:var(--radius); padding:1rem 1.5rem; margin-bottom:1.5rem; display:flex; gap:2rem; align-items:center; box-shadow:var(--shadow); flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+        <span style="font-size:2rem;">🌟</span>
+        <div>
+            <p style="font-weight:900; font-size:1.05rem;">{{ request.user.perfil.puntos }} puntos</p>
+            <p style="font-size:0.85rem; color:#9B7B3A;">Nivel {{ request.user.perfil.nivel }}</p>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+        <span style="font-size:2rem;">🪙</span>
+        <div>
+            <p style="font-weight:900; font-size:1.05rem;">{{ request.user.perfil.monedas }} monedas</p>
+            <p style="font-size:0.85rem; color:#9B7B3A;">Acumuladas en el nido</p>
+        </div>
+    </div>
+</div>
+
+{% if pedidos %}
+    <div class="table-scroll">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Queso pedido</th>
+                <th>Cantidad</th>
+                <th>Puntos</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pedido in pedidos %}
+            <tr>
+                <td>🧀 {{ pedido.queso.nombre }}</td>
+                <td>{{ pedido.cantidad }}</td>
+                <td>+{{ pedido.puntos_ganados }} pts</td>
+                <td>
+                    {% if pedido.completado %}
+                        <span class="badge badge-green">Completado</span>
+                    {% else %}
+                        <span class="badge badge-orange">Pendiente</span>
+                    {% endif %}
+                </td>
+                <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>{# /table-scroll #}
+{% else %}
+    <div class="empty-state">
+        <p>🍕 Todavía no hiciste ningún pedido.</p>
+        <a href="{% url 'juego_game' %}" class="btn btn-primary" style="margin-top:1rem;">¡Jugar para ganar puntos! 🐭</a>
+    </div>
+{% endif %}
+
+{% endblock %}
