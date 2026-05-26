@@ -291,6 +291,7 @@ RECETAS = [
         'imagen_fallback':  CHEESECAKE_IMAGE_FALLBACK,
         'imagen_filename':  'cheesecake.jpg',
         'precio_monedas':   50,  # receta premium
+        'force_precio':     True,  # actualizar si ya existe con precio=0
     },
 ]
 
@@ -396,7 +397,15 @@ class Command(BaseCommand):
             )
 
             if not created:
-                self.stdout.write(self.style.SUCCESS(f"'{receta['titulo']}' ya existe — ok."))
+                # Actualizar precio_monedas si el flag force_precio está activo
+                if receta.get('force_precio') and post.precio_monedas != receta['precio_monedas']:
+                    post.precio_monedas = receta['precio_monedas']
+                    post.save()
+                    self.stdout.write(self.style.SUCCESS(
+                        f"'{receta['titulo']}' — precio actualizado a {receta['precio_monedas']} monedas."
+                    ))
+                else:
+                    self.stdout.write(self.style.SUCCESS(f"'{receta['titulo']}' ya existe — ok."))
                 continue
 
             self.stdout.write(f"Creando '{receta['titulo']}'...")
