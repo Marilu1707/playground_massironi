@@ -24,6 +24,7 @@
         <a href="{% url 'home' %}">Inicio</a>
         <a href="{% url 'post_list' %}">Recetas</a>
         <a href="{% url 'inventario_list' %}">Inventario</a>
+        <a href="{% url 'mercado_home' %}">Mercado 🛒</a>
         <a href="{% url 'juego_game' %}" class="nav-jugar">Jugar 🐭</a>
         <a href="{% url 'about' %}">Acerca de</a>
     </div>
@@ -42,6 +43,8 @@
                 </button>
                 <div class="dropdown-menu" id="menu-user">
                     <a href="{% url 'profile' %}">👤 Mi Perfil</a>
+                    <a href="{% url 'mercado_home' %}">🛒 Mercado</a>
+                    <a href="{% url 'historial' %}">💸 Historial</a>
                     <a href="{% url 'juego_list' %}">🍕 Mis Pedidos</a>
                     <a href="{% url 'messages_list' %}">📩 Mensajes</a>
                     <div class="dropdown-stats">
