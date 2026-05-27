@@ -34,13 +34,21 @@
                     <p class="card-text">{{ queso.descripcion|truncatewords:10 }}</p>
                     <p style="font-size:0.85rem; color:#888; margin-bottom:0.5rem;">Stock: {{ queso.stock }}</p>
                     {% if user.is_authenticated %}
-                        <form method="post" action="{% url 'comprar_queso' queso.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary"
-                                {% if user.perfil.monedas < queso.precio_monedas %}disabled title="No tenés suficientes monedas"{% endif %}>
-                                Comprar 🪙{{ queso.precio_monedas }}
+                        {% if user.perfil.monedas >= queso.precio_monedas %}
+                            <form method="post" action="{% url 'comprar_queso' queso.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">
+                                    Comprar 🪙 {{ queso.precio_monedas }}
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-disabled" disabled>
+                                Comprar 🪙 {{ queso.precio_monedas }}
                             </button>
-                        </form>
+                            <p style="font-size:0.8rem; color:#c0392b; margin-top:0.4rem;">
+                                💸 Necesitás {{ queso.precio_monedas }} 🪙 (tenés {{ user.perfil.monedas }})
+                            </p>
+                        {% endif %}
                     {% else %}
                         <a href="{% url 'login' %}" class="btn btn-secondary">Ingresá para comprar</a>
                     {% endif %}
@@ -74,10 +82,15 @@
                     {% if user.is_authenticated %}
                         {% if post.id in compras_usuario or user == post.autor or user.is_staff %}
                             <a href="{% url 'post_detail' post.id %}" class="btn btn-secondary">✅ Ya desbloqueada</a>
-                        {% else %}
+                        {% elif user.perfil.monedas >= post.precio_monedas %}
                             <a href="{% url 'post_detail' post.id %}" class="btn btn-primary">
-                                Desbloquear 🪙{{ post.precio_monedas }}
+                                Desbloquear 🪙 {{ post.precio_monedas }}
                             </a>
+                        {% else %}
+                            <span class="btn btn-disabled">Desbloquear 🪙 {{ post.precio_monedas }}</span>
+                            <p style="font-size:0.8rem; color:#c0392b; margin-top:0.4rem;">
+                                💸 Necesitás {{ post.precio_monedas }} 🪙 (tenés {{ user.perfil.monedas }})
+                            </p>
                         {% endif %}
                     {% else %}
                         <a href="{% url 'login' %}" class="btn btn-secondary">Ingresá para desbloquear</a>
