@@ -266,32 +266,35 @@ def _create_post_with_image(post, filename, image_url, fallback_url, stdout, sty
 
 RECETAS = [
     {
-        'titulo':           'Pizza Margherita 🍕',
-        'subtitulo':        'Masa, tomate, mozzarella, albahaca — y nada más',
-        'cuerpo':           PIZZA_CUERPO,
-        'imagen_url':       PIZZA_IMAGE_URL,
-        'imagen_fallback':  None,
-        'imagen_filename':  'pizza_margherita.jpg',
-        'precio_monedas':   0,
+        'titulo':               'Pizza Margherita 🍕',
+        'subtitulo':            'Masa, tomate, mozzarella, albahaca — y nada más',
+        'cuerpo':               PIZZA_CUERPO,
+        'imagen_url':           PIZZA_IMAGE_URL,
+        'imagen_fallback':      None,
+        'imagen_filename':      'pizza_margherita.jpg',
+        'cloudinary_public_id': 'recetas/pizza_margherita',
+        'precio_monedas':       0,
     },
     {
-        'titulo':           'Pasta Alfredo 🍝',
-        'subtitulo':        'Manteca, crema y parmesano — lista en 20 minutos',
-        'cuerpo':           ALFREDO_CUERPO,
-        'imagen_url':       ALFREDO_IMAGE_URL,
-        'imagen_fallback':  None,
-        'imagen_filename':  'pasta_alfredo.jpg',
-        'precio_monedas':   0,
+        'titulo':               'Pasta Alfredo 🍝',
+        'subtitulo':            'Manteca, crema y parmesano — lista en 20 minutos',
+        'cuerpo':               ALFREDO_CUERPO,
+        'imagen_url':           ALFREDO_IMAGE_URL,
+        'imagen_fallback':      None,
+        'imagen_filename':      'pasta_alfredo.jpg',
+        'cloudinary_public_id': 'recetas/pasta_alfredo',
+        'precio_monedas':       0,
     },
     {
-        'titulo':           'Cheesecake Clásica 🧀',
-        'subtitulo':        'Base crocante, relleno cremoso, centro tembloroso',
-        'cuerpo':           CHEESECAKE_CUERPO,
-        'imagen_url':       CHEESECAKE_IMAGE_URL,
-        'imagen_fallback':  CHEESECAKE_IMAGE_FALLBACK,
-        'imagen_filename':  'cheesecake.jpg',
-        'precio_monedas':   50,  # receta premium
-        'force_precio':     True,  # actualizar si ya existe con precio=0
+        'titulo':               'Cheesecake Clásica 🧀',
+        'subtitulo':            'Base crocante, relleno cremoso, centro tembloroso',
+        'cuerpo':               CHEESECAKE_CUERPO,
+        'imagen_url':           CHEESECAKE_IMAGE_URL,
+        'imagen_fallback':      CHEESECAKE_IMAGE_FALLBACK,
+        'imagen_filename':      'cheesecake.jpg',
+        'cloudinary_public_id': 'recetas/cheesecake',
+        'precio_monedas':       50,  # receta premium
+        'force_precio':         True,  # actualizar si ya existe con precio=0
     },
 ]
 
@@ -406,52 +409,64 @@ class Command(BaseCommand):
                         f"'{receta['titulo']}' — precio actualizado a {receta['precio_monedas']} monedas."
                     ))
                     updated = True
-                # Subir imagen si:
+                # Asignar imagen si:
                 #   a) el post no tiene imagen, o
-                #   b) Cloudinary está activo pero el archivo no existe realmente en Cloudinary
-                #      (ocurre cuando la imagen fue guardada en almacenamiento local efímero de Vercel
+                #   b) Cloudinary está activo pero la imagen no tiene el public_id correcto
+                #      (ocurre cuando la imagen fue guardada en storage local efímero de Vercel
                 #      antes de que se configurara CLOUDINARY_URL)
                 _cloudinary_active = 'cloudinary' in getattr(
                     settings, 'DEFAULT_FILE_STORAGE', ''
                 ).lower()
-                _needs_upload = False
-                if not post.imagen:
-                    _needs_upload = True
-                elif _cloudinary_active:
-                    # Verificar si el archivo existe realmente en Cloudinary
-                    try:
-                        import cloudinary.api
-                        cloudinary.api.resource(post.imagen.name)
-                        # Archivo encontrado en Cloudinary — no hay que re-subir
-                    except Exception:
-                        # Archivo no encontrado → fue guardado localmente antes
-                        post.imagen = None
-                        post.save(update_fields=['imagen'])
-                        _needs_upload = True
-                if _needs_upload:
-                    self.stdout.write(f"'{receta['titulo']}' — sin imagen, subiendo...")
-                    _create_post_with_image(
-                        post,
-                        receta['imagen_filename'],
-                        receta['imagen_url'],
-                        receta.get('imagen_fallback'),
-                        self.stdout,
-                        self.style,
-                    )
+                _cloudinary_name = receta.get('cloudinary_public_id')  # public_id pre-subido
+                _expected_name = _cloudinary_name if _cloudinary_active else None
+                _needs_image_update = (
+                    not post.imagen
+                    or (_cloudinary_active and _cloudinary_name
+                        and post.imagen.name != _cloudinary_name)
+                )
+                if _needs_image_update:
+                    if _cloudinary_active and _cloudinary_name:
+                        # Las imágenes ya están pre-subidas a Cloudinary.
+                        # Solo actualizamos el campo en la DB con el public_id conocido.
+                        from blog.models import Post as _Post
+                        _Post.objects.filter(pk=post.pk).update(imagen=_cloudinary_name)
+                        self.stdout.write(self.style.SUCCESS(
+                            f"'{receta['titulo']}' — imagen Cloudinary: {_cloudinary_name}"
+                        ))
+                    else:
+                        # Sin Cloudinary: descargar y guardar localmente
+                        self.stdout.write(f"'{receta['titulo']}' — sin imagen, subiendo...")
+                        _create_post_with_image(
+                            post,
+                            receta['imagen_filename'],
+                            receta['imagen_url'],
+                            receta.get('imagen_fallback'),
+                            self.stdout,
+                            self.style,
+                        )
                     updated = True
                 if not updated:
                     self.stdout.write(self.style.SUCCESS(f"'{receta['titulo']}' ya existe — ok."))
                 continue
 
             self.stdout.write(f"Creando '{receta['titulo']}'...")
-            _create_post_with_image(
-                post,
-                receta['imagen_filename'],
-                receta['imagen_url'],
-                receta.get('imagen_fallback'),
-                self.stdout,
-                self.style,
-            )
+            _cloudinary_now = 'cloudinary' in getattr(
+                settings, 'DEFAULT_FILE_STORAGE', ''
+            ).lower()
+            _cid = receta.get('cloudinary_public_id')
+            if _cloudinary_now and _cid:
+                from blog.models import Post as _Post
+                _Post.objects.filter(pk=post.pk).update(imagen=_cid)
+                self.stdout.write(self.style.SUCCESS(f"  imagen Cloudinary: {_cid}"))
+            else:
+                _create_post_with_image(
+                    post,
+                    receta['imagen_filename'],
+                    receta['imagen_url'],
+                    receta.get('imagen_fallback'),
+                    self.stdout,
+                    self.style,
+                )
 
     def _seed_quesos(self):
         """Crea los quesos del inventario (idempotente por nombre)."""
