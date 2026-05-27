@@ -397,6 +397,7 @@ class Command(BaseCommand):
             )
 
             if not created:
+                updated = False
                 # Actualizar precio_monedas si el flag force_precio está activo
                 if receta.get('force_precio') and post.precio_monedas != receta['precio_monedas']:
                     post.precio_monedas = receta['precio_monedas']
@@ -404,7 +405,20 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(
                         f"'{receta['titulo']}' — precio actualizado a {receta['precio_monedas']} monedas."
                     ))
-                else:
+                    updated = True
+                # Subir imagen si el post no tiene una (p.ej. después de configurar Cloudinary)
+                if not post.imagen:
+                    self.stdout.write(f"'{receta['titulo']}' — sin imagen, subiendo...")
+                    _create_post_with_image(
+                        post,
+                        receta['imagen_filename'],
+                        receta['imagen_url'],
+                        receta.get('imagen_fallback'),
+                        self.stdout,
+                        self.style,
+                    )
+                    updated = True
+                if not updated:
                     self.stdout.write(self.style.SUCCESS(f"'{receta['titulo']}' ya existe — ok."))
                 continue
 
