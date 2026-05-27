@@ -122,7 +122,18 @@ if CLOUDINARY_URL:
     import cloudinary.uploader
     import cloudinary.api
     cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # Django 6+ requiere STORAGES en lugar de DEFAULT_FILE_STORAGE
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+    # Sin prefijo: las imágenes se guardan en Cloudinary con el mismo path
+    # que el campo imagen del modelo (ej: recetas/pizza_margherita)
+    CLOUDINARY_STORAGE = {'PREFIX': ''}
     INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
 
 # ---------------------------------------------------------------------------

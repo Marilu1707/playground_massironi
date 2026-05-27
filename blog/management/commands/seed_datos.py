@@ -414,9 +414,18 @@ class Command(BaseCommand):
                 #   b) Cloudinary está activo pero la imagen no tiene el public_id correcto
                 #      (ocurre cuando la imagen fue guardada en storage local efímero de Vercel
                 #      antes de que se configurara CLOUDINARY_URL)
-                _cloudinary_active = 'cloudinary' in getattr(
-                    settings, 'DEFAULT_FILE_STORAGE', ''
-                ).lower()
+                # Django 6+ usa STORAGES, versiones anteriores DEFAULT_FILE_STORAGE
+                _cloudinary_active = (
+                    'cloudinary' in (
+                        getattr(settings, 'STORAGES', {})
+                        .get('default', {})
+                        .get('BACKEND', '')
+                        .lower()
+                    )
+                    or 'cloudinary' in getattr(
+                        settings, 'DEFAULT_FILE_STORAGE', ''
+                    ).lower()
+                )
                 _cloudinary_name = receta.get('cloudinary_public_id')  # public_id pre-subido
                 _expected_name = _cloudinary_name if _cloudinary_active else None
                 _needs_image_update = (
@@ -450,9 +459,17 @@ class Command(BaseCommand):
                 continue
 
             self.stdout.write(f"Creando '{receta['titulo']}'...")
-            _cloudinary_now = 'cloudinary' in getattr(
-                settings, 'DEFAULT_FILE_STORAGE', ''
-            ).lower()
+            _cloudinary_now = (
+                'cloudinary' in (
+                    getattr(settings, 'STORAGES', {})
+                    .get('default', {})
+                    .get('BACKEND', '')
+                    .lower()
+                )
+                or 'cloudinary' in getattr(
+                    settings, 'DEFAULT_FILE_STORAGE', ''
+                ).lower()
+            )
             _cid = receta.get('cloudinary_public_id')
             if _cloudinary_now and _cid:
                 from blog.models import Post as _Post
