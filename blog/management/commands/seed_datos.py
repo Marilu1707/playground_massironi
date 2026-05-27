@@ -406,8 +406,29 @@ class Command(BaseCommand):
                         f"'{receta['titulo']}' — precio actualizado a {receta['precio_monedas']} monedas."
                     ))
                     updated = True
-                # Subir imagen si el post no tiene una (p.ej. después de configurar Cloudinary)
+                # Subir imagen si:
+                #   a) el post no tiene imagen, o
+                #   b) Cloudinary está activo pero el archivo no existe realmente en Cloudinary
+                #      (ocurre cuando la imagen fue guardada en almacenamiento local efímero de Vercel
+                #      antes de que se configurara CLOUDINARY_URL)
+                _cloudinary_active = 'cloudinary' in getattr(
+                    settings, 'DEFAULT_FILE_STORAGE', ''
+                ).lower()
+                _needs_upload = False
                 if not post.imagen:
+                    _needs_upload = True
+                elif _cloudinary_active:
+                    # Verificar si el archivo existe realmente en Cloudinary
+                    try:
+                        import cloudinary.api
+                        cloudinary.api.resource(post.imagen.name)
+                        # Archivo encontrado en Cloudinary — no hay que re-subir
+                    except Exception:
+                        # Archivo no encontrado → fue guardado localmente antes
+                        post.imagen = None
+                        post.save(update_fields=['imagen'])
+                        _needs_upload = True
+                if _needs_upload:
                     self.stdout.write(f"'{receta['titulo']}' — sin imagen, subiendo...")
                     _create_post_with_image(
                         post,
